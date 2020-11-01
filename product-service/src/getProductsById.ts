@@ -4,26 +4,30 @@ import {
   APIGatewayEventRequestContext,
 } from "aws-lambda";
 import products from "../data/products.json";
+import cors from "../data/cors.json";
 
-// eslint-disable-next-line import/prefer-default-export
 export const get = (
   event: APIGatewayProxyEvent,
   context: APIGatewayEventRequestContext,
   callback: APIGatewayProxyCallback
 ): void => {
+  let responseBody = JSON.stringify({});
+  let statusCode = 200;
+
   const product = products.filter(
     (product) => product.id === event.pathParameters.productId
-  );
-  let responseBody = {
-    info: product,
-  };
+  )[0];
+
+  if (product) {
+    responseBody = JSON.stringify(product);
+  } else {
+    statusCode = 404;
+  }
 
   let response = {
-    statusCode: 200,
-    headers: {
-      my_header: "my_value",
-    },
-    body: JSON.stringify(responseBody),
+    statusCode: statusCode,
+    headers: cors,
+    body: responseBody,
     isBase64Encoded: false,
   };
   callback(null, response);

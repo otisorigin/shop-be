@@ -30,9 +30,11 @@ functions:
       - http:
           method: get
           path: products
+          cors: true
   getProductsById:
     handler: src/getProductsById.get
     events:
       - http:
           method: get
           path: products/{productId}
+          cors: true
