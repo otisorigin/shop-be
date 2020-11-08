@@ -21,6 +21,8 @@
   "license": "MIT",
   "dependencies": {
     "@types/aws-lambda": "^8.10.64",
-    "aws-lambda": "^1.0.6"
+    "@types/pg": "^7.14.6",
+    "aws-lambda": "^1.0.6",
+    "pg": "^8.4.2"
   }
 }
