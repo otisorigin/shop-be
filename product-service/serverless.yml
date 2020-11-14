@@ -25,16 +25,23 @@ custom:
 
 functions:
   getProductsList:
-    handler: src/getProductsList.get
+    handler: src/lambdas/getProductsList.get
     events:
       - http:
           method: get
           path: products
           cors: true
   getProductsById:
-    handler: src/getProductsById.get
+    handler: src/lambdas/getProductsById.get
     events:
       - http:
           method: get
           path: products/{productId}
+          cors: true
+  createProduct:
+    handler: src/lambdas/createProduct.add
+    events:
+      - http:
+          method: post
+          path: products
           cors: true
