@@ -16,12 +16,54 @@ provider:
   stage: dev
   region: eu-west-1
 
+  environment:
+    SQS_URL:
+      Ref: SQSQueue
+    SNS_ARN:
+      Ref: SNSTopic
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action: "sqs:*"
+      Resource:
+        - Fn::GetAtt: [SQSQueue, Arn]
+    - Effect: Allow
+      Action: "sns:*"
+      Resource:
+        Ref: SNSTopic
+
 custom:
   webpack:
     webpackConfig: ./webpack.config.js
     includeModules:
       forceExclude:
         - aws-sdk
+
+resources:
+  Resources:
+    SQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: catalogItemsQueue
+    SNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: node-js-sqs-sns-topic
+    SNSSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: otisorigin@gmail.com
+        Protocol: email
+        TopicArn:
+          Ref: SNSTopic
+  Outputs:
+    SQSQueueUrl:
+      Value:
+        Ref: SQSQueue
+
+    SQSQueueArn:
+      Value:
+        Fn::GetAtt: [SQSQueue, Arn]
 
 functions:
   getProductsList:
@@ -45,3 +87,12 @@ functions:
           method: post
           path: products
           cors: true
+  catalogBatchProcess:
+    handler: src/lambdas/catalogBatchProcess.add
+    events:
+      - sqs:
+          batchSize: 5
+          arn:
+            Fn::GetAtt:
+              - SQSQueue
+              - Arn

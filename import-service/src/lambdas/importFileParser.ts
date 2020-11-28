@@ -3,6 +3,7 @@ import {
   APIGatewayEventRequestContext,
 } from "aws-lambda";
 import AWS from "aws-sdk";
+import { Product } from "aws-sdk/clients/securityhub";
 import csv from "csv-parser";
 import cors from "../../data/cors.json";
 
@@ -12,6 +13,7 @@ export const get = async (
   callback: APIGatewayProxyCallback
 ): Promise<void> => {
   const s3 = new AWS.S3({ region: "eu-west-1" });
+  const sqs = new AWS.SQS({ region: "eu-west-1" });
 
   console.log(event);
   event.Records.forEach((record) => {
@@ -26,6 +28,24 @@ export const get = async (
       .pipe(csv())
       .on("data", (data) => {
         console.log(data);
+      })
+      .on("data", (product: Product) => {
+        sqs
+          .sendMessage(
+            {
+              QueueUrl: process.env.SQS_URL,
+              MessageBody: JSON.stringify(product),
+            },
+            () => {
+              console.log(
+                "Send message for " +
+                  product.toString() +
+                  " on sqs: " +
+                  process.env.SQS_URL
+              );
+            }
+          )
+          .promise();
       })
       .on("end", async () => {
         console.log(
