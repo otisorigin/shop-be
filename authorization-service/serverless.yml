@@ -1,0 +1,34 @@
+service:
+  name: authorization-service
+
+frameworkVersion: "2"
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: eu-west-1
+  environment:
+    otisorigin: ${env:otisorigin}
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules:
+      forceExclude:
+        - aws-sdk
+
+functions:
+  basicAuthorizer:
+    handler: src/lambdas/basicAuthorizer.handler
+
+resources:
+  Outputs:
+    authorizationArn:
+      Value:
+        Fn::GetAtt: [BasicAuthorizerLambdaFunction, Arn]
